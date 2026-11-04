@@ -29,8 +29,8 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
   }, [transactions, query, category]);
 
   return (
-    <div>
-      <div className="flex flex-col gap-3 border-b border-zinc-100 p-4 sm:flex-row sm:items-center sm:justify-between">
+    <div className="min-w-0">
+      <div className="flex min-w-0 flex-col gap-3 border-b border-zinc-100 p-4 sm:flex-row sm:items-center sm:justify-between">
         <div className="relative w-full sm:max-w-xs">
           <svg
             viewBox="0 0 24 24"
@@ -50,11 +50,11 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
           />
         </div>
 
-        <div className="flex items-center gap-2">
+        <div className="flex min-w-0 flex-wrap items-center gap-2">
           <select
             value={category}
             onChange={(event) => setCategory(event.target.value)}
-            className="rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+            className="max-w-full min-w-0 rounded-xl border border-zinc-200 bg-white px-3 py-2 text-sm text-zinc-700 outline-none focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
           >
             <option value="all">All categories</option>
             {categories.map((item) => (
@@ -69,7 +69,7 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
         </div>
       </div>
 
-      <div className="max-h-[540px] overflow-auto">
+      <div className="max-h-[540px] overflow-auto overscroll-x-contain">
         <table className="w-full min-w-[720px] border-collapse text-left text-sm">
           <thead className="sticky top-0 z-10 bg-zinc-50/95 backdrop-blur">
             <tr className="text-xs uppercase tracking-wide text-zinc-500">

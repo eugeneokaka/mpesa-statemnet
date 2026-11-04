@@ -1,17 +1,21 @@
 import type { Analysis } from "./types";
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000";
+const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 
 export class ApiError extends Error {}
 
 export async function analyzeStatement(file: File, pin: string): Promise<Analysis> {
+  if (file.size > MAX_UPLOAD_BYTES) {
+    throw new ApiError("File is too large (max 4 MB).");
+  }
+
   const form = new FormData();
   form.append("file", file);
   form.append("pin", pin);
 
   let response: Response;
   try {
-    response = await fetch(`${API_URL}/api/analyze`, {
+    response = await fetch("/api/analyze", {
       method: "POST",
       body: form,
     });

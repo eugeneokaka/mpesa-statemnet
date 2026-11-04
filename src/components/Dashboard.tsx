@@ -49,7 +49,7 @@ type PanelProps = {
 function Panel({ title, subtitle, children, className = "" }: PanelProps) {
   return (
     <section
-      className={`rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm ${className}`}
+      className={`min-w-0 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5 ${className}`}
     >
       <div className="mb-4">
         <h3 className="text-sm font-semibold text-zinc-900">{title}</h3>
@@ -85,12 +85,12 @@ export function Dashboard({
 
   return (
     <div className="space-y-6">
-      <section className="flex flex-col gap-5 rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-700 p-6 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-8">
+      <section className="flex min-w-0 flex-col gap-5 rounded-3xl bg-gradient-to-br from-emerald-600 to-emerald-700 p-5 text-white shadow-sm sm:flex-row sm:items-center sm:justify-between sm:p-8">
         <div>
           <p className="text-xs font-medium uppercase tracking-wider text-emerald-100">
             Statement analysis
           </p>
-          <h2 className="mt-1 text-2xl font-semibold tracking-tight">
+          <h2 className="mt-1 truncate text-xl font-semibold tracking-tight sm:text-2xl">
             {metadata.name || "M-PESA statement"}
           </h2>
           <p className="mt-1.5 text-sm text-emerald-50/90">
@@ -123,7 +123,7 @@ export function Dashboard({
         </div>
       </section>
 
-      <div className="grid grid-cols-2 gap-4 lg:grid-cols-3 xl:grid-cols-6">
+      <div className="grid grid-cols-2 gap-3 sm:gap-4 lg:grid-cols-3 xl:grid-cols-6">
         <StatCard
           label="Total spent"
           value={kes(totals.consumption_spend, 0)}
@@ -146,7 +146,7 @@ export function Dashboard({
       </div>
 
       <div className="grid gap-4 sm:grid-cols-2">
-        <div className="flex items-start gap-3 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="flex min-w-0 items-start gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-red-50 text-red-500">
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M3 17l6-6 4 4 8-8" />
@@ -166,7 +166,7 @@ export function Dashboard({
           </div>
         </div>
 
-        <div className="flex items-start gap-3 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
+        <div className="flex min-w-0 items-start gap-3 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
           <div className="flex h-10 w-10 shrink-0 items-center justify-center rounded-xl bg-amber-50 text-amber-500">
             <svg viewBox="0 0 24 24" className="h-5 w-5" fill="none" stroke="currentColor" strokeWidth="2">
               <path strokeLinecap="round" strokeLinejoin="round" d="M8 7V5a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2" />

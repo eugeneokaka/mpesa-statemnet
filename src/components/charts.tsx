@@ -28,7 +28,7 @@ const tooltipStyle = {
 
 export function SpendingTrend({ data }: { data: DailyPoint[] }) {
   return (
-    <div className="h-[280px] w-full">
+    <div className="h-[220px] w-full min-w-0 sm:h-[280px]">
       <ResponsiveContainer width="100%" height="100%">
         <AreaChart data={data} margin={{ top: 8, right: 8, left: 0, bottom: 0 }}>
           <defs>
@@ -77,16 +77,16 @@ export function CategoryBreakdown({ data }: { data: CategoryInsight[] }) {
   const total = data.reduce((sum, item) => sum + item.amount, 0);
 
   return (
-    <div className="flex flex-col items-center gap-5 sm:flex-row">
-      <div className="relative h-[220px] w-[220px] shrink-0">
+    <div className="flex min-w-0 flex-col items-center gap-5 sm:flex-row sm:items-start lg:flex-col lg:items-center">
+      <div className="relative h-[200px] w-[200px] shrink-0 sm:h-[220px] sm:w-[220px]">
         <ResponsiveContainer width="100%" height="100%">
           <PieChart>
             <Pie
               data={data}
               dataKey="amount"
               nameKey="name"
-              innerRadius={62}
-              outerRadius={96}
+              innerRadius={56}
+              outerRadius={90}
               paddingAngle={2}
               stroke="none"
             >
@@ -106,16 +106,16 @@ export function CategoryBreakdown({ data }: { data: CategoryInsight[] }) {
         </div>
       </div>
 
-      <ul className="w-full space-y-2.5">
+      <ul className="w-full min-w-0 space-y-2.5">
         {data.map((item) => (
-          <li key={item.name} className="flex items-center gap-3 text-sm">
+          <li key={item.name} className="flex min-w-0 items-center gap-3 text-sm">
             <span
               className="h-2.5 w-2.5 shrink-0 rounded-full"
               style={{ backgroundColor: categoryColor(item.name) }}
             />
-            <span className="flex-1 truncate text-zinc-600">{item.name}</span>
-            <span className="font-medium text-zinc-900">{compactKes(item.amount)}</span>
-            <span className="w-12 text-right text-xs text-zinc-400">{item.pct}%</span>
+            <span className="min-w-0 flex-1 truncate text-zinc-600">{item.name}</span>
+            <span className="shrink-0 font-medium text-zinc-900">{compactKes(item.amount)}</span>
+            <span className="w-10 shrink-0 text-right text-xs text-zinc-400">{item.pct}%</span>
           </li>
         ))}
       </ul>
@@ -126,16 +126,16 @@ export function CategoryBreakdown({ data }: { data: CategoryInsight[] }) {
 export function TopRecipients({ data }: { data: CounterpartyInsight[] }) {
   const chartData = data.map((item) => ({
     ...item,
-    label: item.name.length > 22 ? `${item.name.slice(0, 22)}…` : item.name,
+    label: item.name.length > 18 ? `${item.name.slice(0, 18)}…` : item.name,
   }));
 
   return (
-    <div className="h-[320px] w-full">
+    <div className="h-[260px] w-full min-w-0 sm:h-[320px]">
       <ResponsiveContainer width="100%" height="100%">
         <BarChart
           data={chartData}
           layout="vertical"
-          margin={{ top: 4, right: 16, left: 0, bottom: 0 }}
+          margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
         >
           <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f0f0f2" />
           <XAxis
@@ -148,7 +148,7 @@ export function TopRecipients({ data }: { data: CounterpartyInsight[] }) {
           <YAxis
             type="category"
             dataKey="label"
-            width={140}
+            width={116}
             tickLine={false}
             axisLine={false}
             tick={{ fill: "#52525b", fontSize: 11 }}

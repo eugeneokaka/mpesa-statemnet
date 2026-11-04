@@ -101,7 +101,7 @@ export function UploadPanel({
 
       <form
         onSubmit={handleSubmit}
-        className="rounded-3xl border border-zinc-200 bg-white p-6 shadow-sm sm:p-8"
+        className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-8"
       >
         <div
           role="button"
@@ -120,7 +120,7 @@ export function UploadPanel({
             setDragging(false);
             pickFile(event.dataTransfer.files);
           }}
-          className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-6 py-10 text-center transition ${
+          className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-4 py-8 text-center transition sm:px-6 sm:py-10 ${
             dragging
               ? "border-emerald-500 bg-emerald-50"
               : "border-zinc-200 bg-zinc-50/60 hover:border-emerald-400 hover:bg-emerald-50/40"
@@ -176,7 +176,7 @@ export function UploadPanel({
         </div>
 
         <div className="mt-5">
-          <div className="flex items-center justify-between">
+          <div className="flex flex-wrap items-center justify-between gap-2">
             <label htmlFor="pin" className="text-sm font-medium text-zinc-800">
               PDF password
             </label>
@@ -309,7 +309,7 @@ export function UploadPanel({
                 <button
                   type="button"
                   onClick={() => onAnalyzed(entry.analysis)}
-                  className="rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:border-emerald-400 hover:text-emerald-700"
+                  className="shrink-0 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:border-emerald-400 hover:text-emerald-700"
                 >
                   View
                 </button>
@@ -317,7 +317,7 @@ export function UploadPanel({
                   type="button"
                   onClick={() => onRemoveRecent(entry.documentId)}
                   aria-label="Remove from history"
-                  className="rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
+                  className="shrink-0 rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
                 >
                   <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
                     <path strokeLinecap="round" d="M6 6l12 12M18 6 6 18" />

@@ -38,7 +38,7 @@ export default function Home() {
   }
 
   return (
-    <div className="flex min-h-screen flex-col bg-[#f5f7f6]">
+    <div className="flex min-h-screen flex-col overflow-x-clip bg-[#f5f7f6]">
       <header className="sticky top-0 z-30 border-b border-zinc-200/70 bg-white/80 backdrop-blur">
         <div className="mx-auto flex w-full max-w-7xl items-center justify-between px-4 py-3.5 sm:px-6">
           <div className="flex items-center gap-3">
@@ -62,7 +62,7 @@ export default function Home() {
       </header>
 
       <main className="flex-1 px-4 py-10 sm:px-6 sm:py-14">
-        <div className="mx-auto w-full max-w-7xl">
+        <div className="mx-auto w-full min-w-0 max-w-7xl">
           {analysis ? (
             <Dashboard analysis={analysis} onReset={reset} />
           ) : (

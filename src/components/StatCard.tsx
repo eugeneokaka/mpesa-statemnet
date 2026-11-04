@@ -14,14 +14,16 @@ export function StatCard({ label, value, hint, tone = "default" }: Props) {
         : "text-zinc-900";
 
   return (
-    <div className="rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-      <p className="text-xs font-medium uppercase tracking-wide text-zinc-500">
+    <div className="min-w-0 rounded-2xl border border-zinc-200 bg-white p-4 shadow-sm sm:p-5">
+      <p className="text-[11px] font-medium uppercase tracking-wide text-zinc-500 sm:text-xs">
         {label}
       </p>
-      <p className={`mt-2 text-xl font-semibold tracking-tight ${valueTone} sm:text-2xl`}>
+      <p
+        className={`mt-2 break-words text-lg leading-tight font-semibold tracking-tight tabular-nums sm:text-2xl ${valueTone}`}
+      >
         {value}
       </p>
-      {hint && <p className="mt-1 text-xs text-zinc-400">{hint}</p>}
+      {hint && <p className="mt-1 text-[11px] text-zinc-400 sm:text-xs">{hint}</p>}
     </div>
   );
 }
