@@ -2,8 +2,24 @@
 
 import { useRef, useState } from "react";
 
+import {
+  CheckIcon,
+  ClockIcon,
+  FileTextIcon,
+  ShieldIcon,
+  UploadIcon,
+  XIcon,
+} from "@/components/icons";
+import {
+  PageHeader,
+  Panel,
+  StatusPill,
+  btnGhost,
+  btnPrimary,
+  btnSecondary,
+} from "@/components/ui";
 import { analyzeStatement } from "@/lib/api";
-import { formatDate, kes, shortId } from "@/lib/format";
+import { formatDate, kes } from "@/lib/format";
 import { hashFile } from "@/lib/hash";
 import { getAnalysis, type RecentEntry } from "@/lib/statementCache";
 import type { Analysis } from "@/lib/types";
@@ -14,6 +30,13 @@ type Props = {
   onRemoveRecent: (documentId: string) => void;
   onClearRecent: () => void;
 };
+
+const privacyPoints = [
+  ["In-memory only", "Your PDF and password are used once to build the analysis."],
+  ["No database", "We never store your PDF, password, or transactions on our servers."],
+  ["No content logs", "Request bodies and file contents are not logged."],
+  ["This tab only", "Recent analyses stay in this browser tab and clear when you close it."],
+];
 
 export function UploadPanel({
   onAnalyzed,
@@ -30,6 +53,10 @@ export function UploadPanel({
   const [cached, setCached] = useState<Analysis | null>(null);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+
+  function scrollTo(id: string) {
+    document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
+  }
 
   async function pickFile(files: FileList | null) {
     setError("");
@@ -83,251 +110,285 @@ export function UploadPanel({
   }
 
   return (
-    <div className="mx-auto w-full max-w-2xl">
-      <div className="mb-8 text-center">
-        <span className="inline-flex items-center gap-2 rounded-full border border-emerald-200 bg-emerald-50 px-3 py-1 text-xs font-medium text-emerald-700">
-          <span className="h-1.5 w-1.5 rounded-full bg-emerald-500" />
-          Private, in-memory analysis
-        </span>
-        <h1 className="mt-4 text-3xl font-semibold tracking-tight text-zinc-900 sm:text-4xl">
-          Understand your M-PESA spending
-        </h1>
-        <p className="mx-auto mt-3 max-w-lg text-sm leading-6 text-zinc-500">
-          Upload your Safaricom M-PESA statement and its PDF password. We will
-          break down where your money went, your biggest expenses, and your
-          daily habits.
-        </p>
-      </div>
+    <div className="space-y-4">
+      <PageHeader
+        eyebrow="Get started"
+        title="Dashboard"
+        subtitle="Upload your Safaricom M-PESA statement PDF and instantly see where your money went — categories, recipients, fees, and daily habits."
+        actions={
+          <>
+            <button type="button" onClick={() => scrollTo("upload-form")} className={btnPrimary}>
+              <UploadIcon className="h-4 w-4" />
+              Upload PDF
+            </button>
+            <button type="button" onClick={() => scrollTo("privacy")} className={btnSecondary}>
+              <ShieldIcon className="h-4 w-4" />
+              Privacy
+            </button>
+          </>
+        }
+      />
 
-      <form
-        onSubmit={handleSubmit}
-        className="rounded-3xl border border-zinc-200 bg-white p-5 shadow-sm sm:p-8"
-      >
-        <div
-          role="button"
-          tabIndex={0}
-          onClick={() => inputRef.current?.click()}
-          onKeyDown={(event) => {
-            if (event.key === "Enter" || event.key === " ") inputRef.current?.click();
-          }}
-          onDragOver={(event) => {
-            event.preventDefault();
-            setDragging(true);
-          }}
-          onDragLeave={() => setDragging(false)}
-          onDrop={(event) => {
-            event.preventDefault();
-            setDragging(false);
-            pickFile(event.dataTransfer.files);
-          }}
-          className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-4 py-8 text-center transition sm:px-6 sm:py-10 ${
-            dragging
-              ? "border-emerald-500 bg-emerald-50"
-              : "border-zinc-200 bg-zinc-50/60 hover:border-emerald-400 hover:bg-emerald-50/40"
-          }`}
+      <div className="grid gap-4 lg:grid-cols-3">
+        <form
+          id="upload-form"
+          onSubmit={handleSubmit}
+          className="min-w-0 rounded-2xl border border-line bg-white p-4 shadow-[0_1px_2px_rgba(16,24,20,0.04)] sm:p-5 lg:col-span-2"
         >
-          <input
-            ref={inputRef}
-            type="file"
-            accept="application/pdf,.pdf"
-            className="hidden"
-            onChange={(event) => pickFile(event.target.files)}
-          />
-          <div className="flex h-12 w-12 items-center justify-center rounded-xl bg-emerald-600 text-white shadow-sm">
-            <svg viewBox="0 0 24 24" className="h-6 w-6" fill="none" stroke="currentColor" strokeWidth="2">
-              <path strokeLinecap="round" strokeLinejoin="round" d="M12 16V4m0 0L8 8m4-4 4 4" />
-              <path strokeLinecap="round" strokeLinejoin="round" d="M4 16v2a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-2" />
-            </svg>
-          </div>
-          {file ? (
-            <>
-              <p className="mt-4 text-sm font-medium text-zinc-900">{file.name}</p>
-              <p className="mt-1 text-xs text-zinc-500">
-                {(file.size / 1024).toFixed(0)} KB · click to change
+          <div className="mb-4 flex items-start justify-between gap-3">
+            <div>
+              <h2 className="text-sm font-semibold text-ink">Analyze a statement</h2>
+              <p className="mt-0.5 text-[11px] text-muted">
+                PDF only · 4 MB max · processed in memory
               </p>
-            </>
-          ) : (
-            <>
-              <p className="mt-4 text-sm font-medium text-zinc-900">
-                Drop your M-PESA statement here
-              </p>
-              <p className="mt-1 text-xs text-zinc-500">or click to browse · PDF only</p>
-            </>
-          )}
-          {hashing && (
-            <p className="mt-2 text-xs text-zinc-400">Checking this file for a saved copy…</p>
-          )}
-        </div>
-
-        <div className="mt-5 flex items-start gap-3 rounded-xl border border-amber-200 bg-amber-50 p-4">
-          <svg viewBox="0 0 24 24" className="mt-0.5 h-5 w-5 shrink-0 text-amber-600" fill="none" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 9v4m0 4h.01M10.3 3.9 1.8 18a2 2 0 0 0 1.7 3h17a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z" />
-          </svg>
-          <div>
-            <p className="text-sm font-semibold text-amber-900">
-              Do not enter your M-PESA PIN or OTP.
-            </p>
-            <p className="mt-1 text-xs leading-5 text-amber-800">
-              Use only the password that opens the PDF file — usually your ID
-              number or phone number. This tool will never ask for your M-PESA
-              PIN.
-            </p>
+            </div>
+            <StatusPill tone="green">Secure</StatusPill>
           </div>
-        </div>
 
-        <div className="mt-5">
-          <div className="flex flex-wrap items-center justify-between gap-2">
-            <label htmlFor="pin" className="text-sm font-medium text-zinc-800">
-              PDF password
-            </label>
-            <span className="rounded-full bg-red-50 px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-red-600 ring-1 ring-inset ring-red-200">
-              Not your M-PESA PIN
-            </span>
-          </div>
-          <div className="relative mt-2">
+          <div
+            role="button"
+            tabIndex={0}
+            onClick={() => inputRef.current?.click()}
+            onKeyDown={(event) => {
+              if (event.key === "Enter" || event.key === " ") inputRef.current?.click();
+            }}
+            onDragOver={(event) => {
+              event.preventDefault();
+              setDragging(true);
+            }}
+            onDragLeave={() => setDragging(false)}
+            onDrop={(event) => {
+              event.preventDefault();
+              setDragging(false);
+              pickFile(event.dataTransfer.files);
+            }}
+            className={`flex cursor-pointer flex-col items-center justify-center rounded-2xl border-2 border-dashed px-4 py-9 text-center transition sm:px-6 sm:py-12 ${
+              dragging
+                ? "border-brand bg-brand-soft"
+                : "pattern-mint border-mint bg-mint-soft/60 hover:border-brand/50 hover:bg-brand-soft/50"
+            }`}
+          >
             <input
-              id="pin"
-              type={showPin ? "text" : "password"}
-              value={pin}
-              onChange={(event) => setPin(event.target.value)}
-              placeholder="PDF password only (e.g. ID or phone number)"
-              autoComplete="off"
-              className="w-full rounded-xl border border-zinc-200 bg-white px-4 py-3 pr-16 text-sm text-zinc-900 outline-none transition placeholder:text-zinc-400 focus:border-emerald-500 focus:ring-2 focus:ring-emerald-100"
+              ref={inputRef}
+              type="file"
+              accept="application/pdf,.pdf"
+              className="hidden"
+              onChange={(event) => pickFile(event.target.files)}
             />
-            <button
-              type="button"
-              onClick={() => setShowPin((value) => !value)}
-              className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-xs font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
-            >
-              {showPin ? "Hide" : "Show"}
-            </button>
+            <div className="grid h-12 w-12 place-items-center rounded-full bg-brand text-white shadow-sm">
+              <UploadIcon className="h-5 w-5" />
+            </div>
+            {file ? (
+              <>
+                <p className="mt-4 max-w-full truncate text-sm font-semibold text-ink">
+                  {file.name}
+                </p>
+                <p className="mt-1 text-[11px] text-muted">
+                  {(file.size / 1024).toFixed(0)} KB · click to change
+                </p>
+              </>
+            ) : (
+              <>
+                <p className="mt-4 text-sm font-semibold text-ink">
+                  Drop your M-PESA statement here
+                </p>
+                <p className="mt-1 text-[11px] text-muted">
+                  or click to browse · PDF only
+                </p>
+              </>
+            )}
+            {hashing && (
+              <p className="mt-2 text-[11px] text-muted">
+                Checking this file for a saved copy…
+              </p>
+            )}
           </div>
-          <p className="mt-2 text-xs text-zinc-500">
-            Usually your ID number or phone number. It is used once and never stored.
-          </p>
-        </div>
 
-        {cached && (
-          <div className="mt-3 rounded-xl border border-emerald-200 bg-emerald-50 px-3 py-2 text-xs text-emerald-800">
-            Already analyzed in this tab. Click below to view it instantly — no
-            re-upload and no PDF password needed.
+          <div className="mt-4 flex items-start gap-3 rounded-xl border border-[#f2e0bb] bg-[#fdf6e7] p-3.5">
+            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-[#f6e7c4] text-[#9a6f1a]">
+              <ShieldIcon className="h-3.5 w-3.5" />
+            </span>
+            <div>
+              <p className="text-[12px] font-semibold text-[#7a5a15]">
+                Do not enter your M-PESA PIN or OTP.
+              </p>
+              <p className="mt-0.5 text-[11px] leading-5 text-[#8a6a1f]">
+                Use only the password that opens the PDF file — usually the
+                password sent to your phone by SMS.
+              </p>
+            </div>
           </div>
-        )}
 
-        {error && (
-          <div className="mt-5 flex items-start gap-2 rounded-xl border border-red-200 bg-red-50 px-4 py-3 text-sm text-red-700">
-            <svg viewBox="0 0 24 24" className="mt-0.5 h-4 w-4 shrink-0" fill="none" stroke="currentColor" strokeWidth="2">
-              <circle cx="12" cy="12" r="9" />
-              <path strokeLinecap="round" d="M12 8v4m0 4h.01" />
-            </svg>
-            <span>{error}</span>
+          <div className="mt-4">
+            <div className="flex flex-wrap items-center justify-between gap-2">
+              <label htmlFor="pin" className="text-[13px] font-semibold text-ink">
+                PDF password
+              </label>
+              <span className="rounded-full bg-[#fbeae4] px-2 py-0.5 text-[10px] font-semibold uppercase tracking-wide text-[#bb5238]">
+                Not your M-PESA PIN
+              </span>
+            </div>
+            <div className="relative mt-2">
+              <input
+                id="pin"
+                type={showPin ? "text" : "password"}
+                value={pin}
+                onChange={(event) => setPin(event.target.value)}
+                placeholder="PDF password only (e.g. the SMS password)"
+                autoComplete="off"
+                className="w-full rounded-xl border border-line bg-white px-4 py-3 pr-16 text-sm text-ink outline-none transition placeholder:text-muted/80 focus:border-mint focus:ring-2 focus:ring-brand-soft"
+              />
+              <button
+                type="button"
+                onClick={() => setShowPin((value) => !value)}
+                className="absolute right-3 top-1/2 -translate-y-1/2 rounded-md px-2 py-1 text-[11px] font-semibold text-muted transition hover:bg-warm hover:text-ink"
+              >
+                {showPin ? "Hide" : "Show"}
+              </button>
+            </div>
+            <p className="mt-2 text-[11px] text-muted">
+              Usually the password sent to your phone by SMS. It is used once and
+              never stored.
+            </p>
           </div>
-        )}
 
-        <button
-          type="submit"
-          disabled={loading}
-          className="mt-6 flex w-full items-center justify-center gap-2 rounded-xl bg-emerald-600 px-5 py-3 text-sm font-semibold text-white shadow-sm transition hover:bg-emerald-700 disabled:cursor-not-allowed disabled:opacity-60"
-        >
-          {loading ? (
-            <>
-              <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
-                <circle className="opacity-25" cx="12" cy="12" r="10" stroke="currentColor" strokeWidth="4" />
-                <path className="opacity-90" fill="currentColor" d="M4 12a8 8 0 0 1 8-8V0C5.4 0 0 5.4 0 12h4Z" />
-              </svg>
-              Analyzing your statement…
-            </>
-          ) : cached ? (
-            "View previous analysis"
-          ) : (
-            "Analyze statement"
+          {cached && (
+            <div className="mt-3 rounded-xl border border-mint bg-mint-soft px-3 py-2 text-[11px] text-brand-dark">
+              Already analyzed in this tab. View it instantly — no re-upload and no
+              PDF password needed.
+            </div>
           )}
-        </button>
-      </form>
 
-      <section className="mt-6 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-        <h2 className="flex items-center gap-2 text-sm font-semibold text-zinc-900">
-          <svg viewBox="0 0 24 24" className="h-4 w-4 text-emerald-600" fill="none" stroke="currentColor" strokeWidth="2">
-            <path strokeLinecap="round" strokeLinejoin="round" d="M12 3 4 6v6c0 4.5 3.4 7.9 8 9 4.6-1.1 8-4.5 8-9V6l-8-3Z" />
-            <path strokeLinecap="round" strokeLinejoin="round" d="m9 12 2 2 4-4" />
-          </svg>
-          How we handle your data
-        </h2>
-        <ul className="mt-3 space-y-2.5 text-xs leading-5 text-zinc-600">
-          <li>
-            <span className="font-medium text-zinc-800">In-memory only.</span>{" "}
-            Your PDF and password are used once to generate the analysis.
-          </li>
-          <li>
-            <span className="font-medium text-zinc-800">No database.</span> We
-            never store your PDF, password, or transactions on our servers.
-          </li>
-          <li>
-            <span className="font-medium text-zinc-800">No content logs.</span>{" "}
-            Request bodies and file contents are not logged.
-          </li>
-          <li>
-            <span className="font-medium text-zinc-800">This tab only.</span>{" "}
-            Recent analyses stay in this browser tab and clear when you close it.
-          </li>
-          <li>
-            <span className="font-medium text-zinc-800">HTTPS.</span> Always use
-            the deployed site over a secure connection.
-          </li>
-        </ul>
-        <p className="mt-3 text-[11px] leading-5 text-zinc-400">
-          Pesa Insights is not affiliated with Safaricom PLC. We will never ask
-          for your M-PESA PIN or OTP.
-        </p>
-      </section>
+          {error && (
+            <div className="mt-4 flex items-start gap-2 rounded-xl border border-[#f3d3ca] bg-[#fdf0ec] px-3.5 py-3 text-[12px] text-[#a9472f]">
+              <XIcon className="mt-0.5 h-4 w-4 shrink-0" />
+              <span>{error}</span>
+            </div>
+          )}
 
-      {recent.length > 0 && (
-        <section className="mt-6 rounded-2xl border border-zinc-200 bg-white p-5 shadow-sm">
-          <div className="flex items-center justify-between">
-            <h2 className="text-sm font-semibold text-zinc-900">Recent in this tab</h2>
-            <button
-              type="button"
-              onClick={onClearRecent}
-              className="rounded-lg px-2 py-1 text-xs font-medium text-zinc-500 hover:bg-zinc-100 hover:text-zinc-700"
+          <button
+            type="submit"
+            disabled={loading}
+            className={`${btnPrimary} mt-5 w-full py-3`}
+          >
+            {loading ? (
+              <>
+                <svg className="h-4 w-4 animate-spin" viewBox="0 0 24 24" fill="none">
+                  <circle
+                    className="opacity-25"
+                    cx="12"
+                    cy="12"
+                    r="10"
+                    stroke="currentColor"
+                    strokeWidth="4"
+                  />
+                  <path
+                    className="opacity-90"
+                    fill="currentColor"
+                    d="M4 12a8 8 0 0 1 8-8V0C5.4 0 0 5.4 0 12h4Z"
+                  />
+                </svg>
+                Analyzing your statement…
+              </>
+            ) : cached ? (
+              "View previous analysis"
+            ) : (
+              "Analyze statement"
+            )}
+          </button>
+        </form>
+
+        <div className="flex flex-col gap-4">
+          <Panel
+            id="privacy"
+            title="How we handle your data"
+            subtitle="Private by default, no account needed"
+            action={<ShieldIcon className="h-4 w-4 text-brand" />}
+          >
+            <ul className="space-y-3">
+              {privacyPoints.map(([title, body]) => (
+                <li key={title} className="flex gap-2.5">
+                  <span className="mt-0.5 grid h-5 w-5 shrink-0 place-items-center rounded-full bg-brand-soft text-brand">
+                    <CheckIcon className="h-3 w-3" />
+                  </span>
+                  <div>
+                    <p className="text-[12px] font-semibold text-ink">{title}</p>
+                    <p className="text-[11px] leading-5 text-muted">{body}</p>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </Panel>
+
+          {recent.length > 0 && (
+            <Panel
+              title="Recent in this tab"
+              subtitle="Not saved to any server"
+              action={
+                <button type="button" onClick={onClearRecent} className={btnGhost}>
+                  Clear all
+                </button>
+              }
             >
-              Clear all
-            </button>
+              <ul className="divide-y divide-line">
+                {recent.map((entry) => (
+                  <li key={entry.documentId} className="flex items-center gap-2.5 py-2.5">
+                    <span className="grid h-8 w-8 shrink-0 place-items-center rounded-full bg-brand-soft text-brand">
+                      <FileTextIcon className="h-4 w-4" />
+                    </span>
+                    <div className="min-w-0 flex-1">
+                      <p className="truncate text-[12px] font-semibold text-ink">
+                        {entry.analysis.statement.filename || "M-PESA statement"}
+                      </p>
+                      <p className="mt-0.5 flex items-center gap-1 truncate text-[10px] text-muted">
+                        <ClockIcon className="h-3 w-3" />
+                        {formatDate(entry.analysis.period.start)} ·{" "}
+                        {kes(entry.analysis.totals.consumption_spend, 0)}
+                      </p>
+                    </div>
+                    <button
+                      type="button"
+                      onClick={() => onAnalyzed(entry.analysis)}
+                      className="shrink-0 rounded-lg border border-line px-2.5 py-1 text-[10px] font-semibold text-ink transition hover:border-mint hover:bg-warm"
+                    >
+                      View
+                    </button>
+                    <button
+                      type="button"
+                      onClick={() => onRemoveRecent(entry.documentId)}
+                      aria-label="Remove from history"
+                      className="shrink-0 rounded-lg p-1.5 text-muted transition hover:bg-warm hover:text-ink"
+                    >
+                      <XIcon className="h-3.5 w-3.5" />
+                    </button>
+                  </li>
+                ))}
+              </ul>
+            </Panel>
+          )}
+
+          <div className="relative overflow-hidden rounded-2xl bg-brand-dark p-4 text-white">
+            <div className="pattern-dark pointer-events-none absolute inset-0 opacity-80" />
+            <div className="relative">
+              <div className="flex h-9 w-9 items-center justify-center rounded-full bg-white/10">
+                <ShieldIcon className="h-4 w-4" />
+              </div>
+              <p className="mt-3 text-[13px] font-semibold leading-snug">
+                Your PDF is never stored
+              </p>
+              <p className="mt-1 text-[11px] leading-4 text-white/60">
+                We never ask for your M-PESA PIN or OTP. Only the PDF password is
+                used, once, to read your statement.
+              </p>
+              <div className="mt-3 flex flex-wrap gap-1.5 text-[10px] text-white/70">
+                <span className="rounded-full bg-white/10 px-2 py-1">No DB</span>
+                <span className="rounded-full bg-white/10 px-2 py-1">No logs</span>
+                <span className="rounded-full bg-white/10 px-2 py-1">Tab-only</span>
+              </div>
+            </div>
           </div>
-          <ul className="mt-2 divide-y divide-zinc-100">
-            {recent.map((entry) => (
-              <li key={entry.documentId} className="flex items-center gap-3 py-3">
-                <div className="min-w-0 flex-1">
-                  <p className="truncate text-sm font-medium text-zinc-800">
-                    {entry.analysis.statement.filename || "M-PESA statement"}
-                  </p>
-                  <p className="mt-0.5 text-xs text-zinc-400">
-                    {formatDate(entry.analysis.period.start)} ·{" "}
-                    {kes(entry.analysis.totals.consumption_spend, 0)} · ID{" "}
-                    {shortId(entry.documentId)}
-                  </p>
-                </div>
-                <button
-                  type="button"
-                  onClick={() => onAnalyzed(entry.analysis)}
-                  className="shrink-0 rounded-lg border border-zinc-200 px-3 py-1.5 text-xs font-medium text-zinc-700 hover:border-emerald-400 hover:text-emerald-700"
-                >
-                  View
-                </button>
-                <button
-                  type="button"
-                  onClick={() => onRemoveRecent(entry.documentId)}
-                  aria-label="Remove from history"
-                  className="shrink-0 rounded-lg p-1.5 text-zinc-400 hover:bg-zinc-100 hover:text-zinc-700"
-                >
-                  <svg viewBox="0 0 24 24" className="h-4 w-4" fill="none" stroke="currentColor" strokeWidth="2">
-                    <path strokeLinecap="round" d="M6 6l12 12M18 6 6 18" />
-                  </svg>
-                </button>
-              </li>
-            ))}
-          </ul>
-        </section>
-      )}
+        </div>
+      </div>
     </div>
   );
 }
