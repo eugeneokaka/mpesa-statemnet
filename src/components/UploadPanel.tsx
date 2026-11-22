@@ -7,6 +7,7 @@ import {
   ClockIcon,
   FileTextIcon,
   ShieldIcon,
+  SparkleIcon,
   UploadIcon,
   XIcon,
 } from "@/components/icons";
@@ -39,6 +40,13 @@ const privacyPoints = [
   ["No database", "We never store your PDF, password, or transactions on our servers."],
   ["No content logs", "Request bodies and file contents are not logged."],
   ["This tab only", "Recent analyses stay in this browser tab and clear when you close it."],
+];
+
+const loadingMessages = [
+  "Opening your statement…",
+  "Reading the transaction pages…",
+  "Grouping your spending…",
+  "Adding up the totals…",
 ];
 
 type UploadError = {
@@ -95,6 +103,7 @@ export function UploadPanel({
   const [showPin, setShowPin] = useState(false);
   const [dragging, setDragging] = useState(false);
   const [loading, setLoading] = useState(false);
+  const [loadingStep, setLoadingStep] = useState(0);
   const [hashing, setHashing] = useState(false);
   const [cached, setCached] = useState<Analysis | null>(null);
   const [error, setError] = useState<UploadError | null>(null);
@@ -106,6 +115,14 @@ export function UploadPanel({
       errorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
     }
   }, [error]);
+
+  useEffect(() => {
+    if (!loading) return;
+    const timer = window.setInterval(() => {
+      setLoadingStep((step) => (step + 1) % loadingMessages.length);
+    }, 2600);
+    return () => window.clearInterval(timer);
+  }, [loading]);
 
   function scrollTo(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -160,6 +177,7 @@ export function UploadPanel({
     }
 
     setLoading(true);
+    setLoadingStep(0);
     setError(null);
     try {
       const analysis = await analyzeStatement(file, pin.trim());
@@ -395,9 +413,34 @@ export function UploadPanel({
           </button>
 
           {loading && (
-            <p className="mt-2 text-center text-[11px] leading-5 text-muted">
-              Large statements can take up to a minute. Keep this tab open.
-            </p>
+            <div
+              role="status"
+              aria-live="polite"
+              className="mt-4 overflow-hidden rounded-2xl border border-mint bg-mint-soft/80 p-4"
+            >
+              <div className="flex items-center gap-3">
+                <div className="relative h-12 w-12 shrink-0" aria-hidden="true">
+                  <span className="absolute inset-0 animate-ping rounded-full bg-brand/15" />
+                  <span className="absolute inset-0 rounded-full border-2 border-brand/15" />
+                  <span className="absolute inset-0 animate-spin rounded-full border-2 border-transparent border-t-brand border-r-brand" />
+                  <span className="absolute inset-[7px] animate-[spin_1.5s_linear_infinite_reverse] rounded-full border-2 border-transparent border-b-brand-dark/70 border-l-brand-dark/70" />
+                  <span className="absolute inset-0 grid place-items-center">
+                    <SparkleIcon className="h-3.5 w-3.5 animate-pulse text-brand" />
+                  </span>
+                </div>
+                <div className="min-w-0">
+                  <p className="text-[13px] font-semibold text-brand-dark">
+                    {loadingMessages[loadingStep]}
+                  </p>
+                  <p className="mt-0.5 text-[11px] leading-5 text-muted">
+                    ⏳ This might take a while — please be patient.
+                  </p>
+                </div>
+              </div>
+              <div className="mt-3 h-1.5 overflow-hidden rounded-full bg-white">
+                <div className="loading-bar h-full w-1/3 rounded-full bg-brand" />
+              </div>
+            </div>
           )}
         </form>
 
