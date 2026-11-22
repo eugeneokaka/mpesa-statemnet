@@ -105,7 +105,14 @@ export async function POST(request: Request) {
         service: "lambda",
       });
       const signed = await signer.sign(url, init);
-      response = await fetch(signed);
+      // Pass the signed URL/headers directly instead of the signed Request.
+      // Next's patched fetch can fail on large signed Request bodies.
+      response = await fetch(signed.url, {
+        method: "POST",
+        headers: signed.headers,
+        body,
+        signal: init.signal,
+      });
     } else {
       response = await fetch(url, init);
     }
@@ -142,8 +149,14 @@ export async function POST(request: Request) {
         { status: 504 },
       );
     }
+    const cause =
+      error instanceof Error && "cause" in error
+        ? String((error as { cause?: unknown }).cause)
+        : "";
     console.error(
-      `[analyze] proxy failure mode=${selectedMode} durationMs=${Date.now() - started}`,
+      `[analyze] proxy failure mode=${selectedMode} durationMs=${Date.now() - started} message=${
+        error instanceof Error ? error.message : String(error)
+      } cause=${cause}`,
       error,
     );
     return Response.json(
