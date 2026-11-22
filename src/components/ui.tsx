@@ -27,7 +27,7 @@ export function Panel({
   return (
     <section
       id={id}
-      className={`min-w-0 rounded-2xl border border-line bg-white p-4 shadow-[0_1px_2px_rgba(16,24,20,0.04)] sm:p-5 ${className}`}
+      className={`min-w-0 rounded-2xl border border-line bg-white p-4 shadow-[0_1px_2px_rgba(16,24,20,0.04)] print:break-inside-avoid print:shadow-none sm:p-5 ${className}`}
     >
       {(title || action) && (
         <div className="mb-4 flex items-start justify-between gap-3">
@@ -69,7 +69,9 @@ export function PageHeader({
           <p className="mt-1 max-w-2xl text-sm leading-6 text-muted">{subtitle}</p>
         )}
       </div>
-      {actions && <div className="flex flex-wrap items-center gap-2">{actions}</div>}
+      {actions && (
+        <div className="flex flex-wrap items-center gap-2 print:hidden">{actions}</div>
+      )}
     </div>
   );
 }

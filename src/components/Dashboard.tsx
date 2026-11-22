@@ -14,6 +14,7 @@ import {
   DownloadIcon,
   ListIcon,
   PlusIcon,
+  PrinterIcon,
   ReceiptIcon,
 } from "@/components/icons";
 import {
@@ -74,7 +75,7 @@ function LargestExpenseCard({ analysis }: { analysis: Analysis }) {
           <button
             type="button"
             onClick={scrollToTransactions}
-            className={`${btnPrimary} mt-3 w-full py-2.5 text-xs`}
+            className={`${btnPrimary} mt-3 w-full py-2.5 text-xs print:hidden`}
           >
             <ListIcon className="h-3.5 w-3.5" />
             View transactions
@@ -111,6 +112,17 @@ export function Dashboard({
     URL.revokeObjectURL(url);
   }
 
+  function downloadPdf() {
+    const previousTitle = document.title;
+    document.title = `mpesa-dashboard-${period.start}`;
+    const restore = () => {
+      document.title = previousTitle;
+    };
+    window.addEventListener("afterprint", restore, { once: true });
+    window.addEventListener("focus", restore, { once: true });
+    window.print();
+  }
+
   return (
     <div className="space-y-4">
       <PageHeader
@@ -128,6 +140,15 @@ export function Dashboard({
             <button type="button" onClick={onReset} className={btnPrimary}>
               <PlusIcon className="h-4 w-4" />
               New statement
+            </button>
+            <button
+              type="button"
+              onClick={downloadPdf}
+              className={btnSecondary}
+              title="Open the print dialog and choose Save as PDF"
+            >
+              <PrinterIcon className="h-4 w-4" />
+              Download PDF
             </button>
             <button type="button" onClick={downloadJson} className={btnSecondary}>
               <DownloadIcon className="h-4 w-4" />
@@ -222,7 +243,7 @@ export function Dashboard({
 
       <section
         id="transactions"
-        className="min-w-0 overflow-hidden rounded-2xl border border-line bg-white shadow-[0_1px_2px_rgba(16,24,20,0.04)]"
+        className="min-w-0 overflow-hidden rounded-2xl border border-line bg-white shadow-[0_1px_2px_rgba(16,24,20,0.04)] print:break-before-page print:overflow-visible print:rounded-none print:border-0 print:shadow-none"
       >
         <div className="flex items-start justify-between gap-3 px-4 pt-4 sm:px-5 sm:pt-5">
           <div>

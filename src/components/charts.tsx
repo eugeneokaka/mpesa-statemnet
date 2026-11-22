@@ -67,9 +67,9 @@ export function SpendingTrend({ data }: { data: DailyPoint[] }) {
     <div className="min-w-0">
       <div
         ref={scrollRef}
-        className="overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:thin]"
+        className="overflow-x-auto overscroll-x-contain pb-1 [scrollbar-width:thin] print:overflow-visible"
       >
-        <div style={{ minWidth: data.length * slot }} className="w-full">
+        <div style={{ minWidth: data.length * slot }} className="trend-inner w-full">
           <div className="h-[260px] w-full sm:h-[280px]">
             <ResponsiveContainer width="100%" height="100%">
               <LineChart
@@ -119,7 +119,7 @@ export function SpendingTrend({ data }: { data: DailyPoint[] }) {
         </div>
       </div>
       {overflowing && (
-        <p className="mt-2 text-[10px] text-muted">
+        <p className="mt-2 text-[10px] text-muted print:hidden">
           Scroll sideways to see all {data.length} days.
         </p>
       )}

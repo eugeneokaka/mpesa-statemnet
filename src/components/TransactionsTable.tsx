@@ -72,7 +72,7 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
 
   return (
     <div className="min-w-0">
-      <div className="flex flex-col gap-3 border-b border-line px-4 py-3 sm:flex-row sm:items-center sm:justify-between sm:px-5">
+      <div className="flex flex-col gap-3 border-b border-line px-4 py-3 print:hidden sm:flex-row sm:items-center sm:justify-between sm:px-5">
         <div className="relative w-full sm:max-w-xs">
           <SearchIcon className="pointer-events-none absolute left-3 top-1/2 h-4 w-4 -translate-y-1/2 text-muted" />
           <input
@@ -159,16 +159,16 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
         </div>
       </div>
 
-      <div className="max-h-[560px] overflow-auto overscroll-x-contain">
-        <table className="w-full min-w-[760px] border-collapse text-left text-sm">
-          <thead className="sticky top-0 z-10 bg-warm/95 backdrop-blur">
+      <div className="max-h-[560px] overflow-auto overscroll-x-contain print:max-h-none print:overflow-visible">
+        <table className="w-full min-w-[760px] border-collapse text-left text-sm print:min-w-0 print:w-full print:text-[10px]">
+          <thead className="sticky top-0 z-10 bg-warm/95 backdrop-blur print:static print:bg-white">
             <tr className="text-[10px] uppercase tracking-[0.14em] text-muted">
               <th className="px-4 py-3 font-semibold sm:px-5">Date</th>
               <th className="px-4 py-3 font-semibold">Details</th>
               <th className="px-4 py-3 font-semibold">Category</th>
               <th className="px-4 py-3 text-right font-semibold">Amount</th>
               <th className="px-4 py-3 text-right font-semibold">Balance</th>
-              <th className="w-10 px-2 py-3" aria-label="Expand transaction" />
+              <th className="w-10 px-2 py-3 print:hidden" aria-label="Expand transaction" />
             </tr>
           </thead>
           <tbody className="divide-y divide-line">
@@ -188,8 +188,8 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
                     <td className="whitespace-nowrap px-4 py-3 text-[11px] text-muted sm:px-5">
                       {formatDateTime(item.time)}
                     </td>
-                    <td className="max-w-[320px] px-4 py-3">
-                      <p className="truncate text-[13px] font-medium text-ink">
+                    <td className="max-w-[320px] px-4 py-3 print:max-w-none">
+                      <p className="truncate text-[13px] font-medium text-ink print:whitespace-normal print:break-words">
                         {item.details}
                       </p>
                       <p className="mt-0.5 text-[11px] text-muted">{item.receipt}</p>
@@ -214,7 +214,7 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
                     <td className="whitespace-nowrap px-4 py-3 text-right text-[11px] tabular-nums text-muted">
                       {kes(item.balance)}
                     </td>
-                    <td className="px-2 py-3 text-right">
+                    <td className="px-2 py-3 text-right print:hidden">
                       <button
                         type="button"
                         onClick={(event) => {

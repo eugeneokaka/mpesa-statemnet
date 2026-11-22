@@ -5,7 +5,10 @@ import { useState } from "react";
 import { ShieldIcon } from "@/components/icons";
 
 const privacyPoints = [
-  ["In-memory only", "PDFs are read once to build the analysis."],
+  [
+    "Processed on our server",
+    "PDFs are uploaded over HTTPS, analyzed in memory, then discarded.",
+  ],
   ["No database", "Statements, passwords, and transactions are never stored."],
   ["No content logs", "Request bodies and file contents are not logged."],
   ["This tab only", "Recent analyses clear when you close the tab."],
@@ -15,7 +18,7 @@ export function Topbar() {
   const [privacyOpen, setPrivacyOpen] = useState(false);
 
   return (
-    <header className="relative flex items-center justify-between gap-3 border-b border-line px-4 py-4 sm:px-6 lg:px-8">
+    <header className="relative flex items-center justify-between gap-3 border-b border-line px-4 py-4 print:hidden sm:px-6 lg:px-8">
       <div className="flex min-w-0 items-center gap-2.5">
         <div className="grid h-9 w-9 shrink-0 place-items-center rounded-full bg-brand text-white shadow-sm">
           <span className="text-[15px] font-bold leading-none">M</span>
