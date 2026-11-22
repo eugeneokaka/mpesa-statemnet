@@ -3,7 +3,15 @@ import type { Analysis } from "./types";
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
 const REQUEST_TIMEOUT_MS = 295_000;
 
-export class ApiError extends Error {}
+export class ApiError extends Error {
+  status?: number;
+
+  constructor(message: string, status?: number) {
+    super(message);
+    this.name = "ApiError";
+    this.status = status;
+  }
+}
 
 function isAbortError(error: unknown): boolean {
   return (
@@ -55,7 +63,7 @@ export async function analyzeStatement(file: File, pin: string): Promise<Analysi
     } catch {
       // keep the generic message
     }
-    throw new ApiError(detail);
+    throw new ApiError(detail, response.status);
   }
 
   return (await response.json()) as Analysis;

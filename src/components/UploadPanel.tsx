@@ -19,7 +19,7 @@ import {
   btnPrimary,
   btnSecondary,
 } from "@/components/ui";
-import { analyzeStatement } from "@/lib/api";
+import { analyzeStatement, ApiError } from "@/lib/api";
 import { formatDate, kes } from "@/lib/format";
 import { hashFile } from "@/lib/hash";
 import { getAnalysis, type RecentEntry } from "@/lib/statementCache";
@@ -56,6 +56,14 @@ type UploadError = {
 };
 
 function describeError(error: unknown): UploadError {
+  if (error instanceof ApiError && error.status === 401) {
+    return {
+      title: "Wrong PDF password",
+      message: "We couldn't open your statement with that password.",
+      hint: "Use the password sent to you by SMS that opens the PDF — not your M-PESA PIN or OTP. Check for extra spaces, and try the newest password if you requested more than one.",
+    };
+  }
+
   const message =
     error instanceof Error ? error.message : "Something went wrong. Please try again.";
   const lower = message.toLowerCase();
@@ -83,7 +91,7 @@ function describeError(error: unknown): UploadError {
 
   if (lower.includes("password") || lower.includes("pin")) {
     return {
-      title: "Could not open the PDF",
+      title: "PDF password problem",
       message,
       hint: "Use the password that opens the PDF file, not your M-PESA PIN or OTP.",
     };
@@ -107,7 +115,9 @@ export function UploadPanel({
   const [hashing, setHashing] = useState(false);
   const [cached, setCached] = useState<Analysis | null>(null);
   const [error, setError] = useState<UploadError | null>(null);
+  const [pinInvalid, setPinInvalid] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
+  const pinRef = useRef<HTMLInputElement>(null);
   const errorRef = useRef<HTMLDivElement>(null);
 
   useEffect(() => {
@@ -178,11 +188,17 @@ export function UploadPanel({
 
     setLoading(true);
     setLoadingStep(0);
+    setPinInvalid(false);
     setError(null);
     try {
       const analysis = await analyzeStatement(file, pin.trim());
       onAnalyzed(analysis);
     } catch (err) {
+      if (err instanceof ApiError && err.status === 401) {
+        setPinInvalid(true);
+        pinRef.current?.focus();
+        pinRef.current?.select();
+      }
       setError(describeError(err));
     } finally {
       setLoading(false);
@@ -326,13 +342,23 @@ export function UploadPanel({
             </div>
             <div className="relative mt-2">
               <input
+                ref={pinRef}
                 id="pin"
                 type={showPin ? "text" : "password"}
                 value={pin}
-                onChange={(event) => setPin(event.target.value)}
+                onChange={(event) => {
+                  setPinInvalid(false);
+                  setPin(event.target.value);
+                }}
                 placeholder="PDF password only (e.g. the SMS password)"
                 autoComplete="off"
-                className="w-full rounded-xl border border-line bg-white px-4 py-3 pr-16 text-sm text-ink outline-none transition placeholder:text-muted/80 focus:border-mint focus:ring-2 focus:ring-brand-soft"
+                aria-invalid={pinInvalid}
+                aria-describedby={pinInvalid ? "pin-error" : undefined}
+                className={`w-full rounded-xl border bg-white px-4 py-3 pr-16 text-sm text-ink outline-none transition placeholder:text-muted/80 focus:ring-2 ${
+                  pinInvalid
+                    ? "border-[#e7a293] focus:border-[#c9725e] focus:ring-[#f7ded7]"
+                    : "border-line focus:border-mint focus:ring-brand-soft"
+                }`}
               />
               <button
                 type="button"
@@ -342,10 +368,21 @@ export function UploadPanel({
                 {showPin ? "Hide" : "Show"}
               </button>
             </div>
-            <p className="mt-2 text-[11px] text-muted">
-              Usually the password sent to your phone by SMS. It is used once and
-              never stored.
-            </p>
+            {pinInvalid ? (
+              <p
+                id="pin-error"
+                className="mt-2 flex items-start gap-1.5 text-[11px] leading-5 text-[#a9472f]"
+              >
+                <XIcon className="mt-0.5 h-3.5 w-3.5 shrink-0" />
+                That password didn&apos;t open the PDF. Check the SMS password and
+                try again.
+              </p>
+            ) : (
+              <p className="mt-2 text-[11px] text-muted">
+                Usually the password sent to your phone by SMS. It is used once and
+                never stored.
+              </p>
+            )}
           </div>
 
           {cached && (
