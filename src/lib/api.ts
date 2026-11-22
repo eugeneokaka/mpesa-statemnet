@@ -1,8 +1,17 @@
 import type { Analysis } from "./types";
 
 const MAX_UPLOAD_BYTES = 4 * 1024 * 1024;
+const REQUEST_TIMEOUT_MS = 295_000;
 
 export class ApiError extends Error {}
+
+function isAbortError(error: unknown): boolean {
+  return (
+    typeof error === "object" &&
+    error !== null &&
+    (error as { name?: string }).name === "AbortError"
+  );
+}
 
 export async function analyzeStatement(file: File, pin: string): Promise<Analysis> {
   if (file.size > MAX_UPLOAD_BYTES) {
@@ -13,16 +22,27 @@ export async function analyzeStatement(file: File, pin: string): Promise<Analysi
   form.append("file", file);
   form.append("pin", pin);
 
+  const controller = new AbortController();
+  const timer = setTimeout(() => controller.abort(), REQUEST_TIMEOUT_MS);
+
   let response: Response;
   try {
     response = await fetch("/api/analyze", {
       method: "POST",
       body: form,
+      signal: controller.signal,
     });
-  } catch {
+  } catch (error) {
+    if (isAbortError(error)) {
+      throw new ApiError(
+        "This statement took too long to analyze. Try a shorter period, for example 3-6 months.",
+      );
+    }
     throw new ApiError(
-      "Could not reach the analysis server. Make sure the backend is running.",
+      "Could not reach the analysis server. Check your connection and try again.",
     );
+  } finally {
+    clearTimeout(timer);
   }
 
   if (!response.ok) {

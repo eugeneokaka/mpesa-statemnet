@@ -1,9 +1,10 @@
 import { AwsClient } from "aws4fetch";
 
-export const maxDuration = 60;
+export const maxDuration = 300;
 
 const MAX_BYTES = 4 * 1024 * 1024;
 const MULTIPART_OVERHEAD = 64 * 1024;
+const UPSTREAM_TIMEOUT_MS = 295_000;
 
 function trimBase(value: string | undefined): string {
   return (value ?? "").replace(/\/+$/, "");
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
     method: "POST",
     headers: { "content-type": contentType },
     body,
+    signal: AbortSignal.timeout(UPSTREAM_TIMEOUT_MS),
   };
 
   try {
@@ -125,6 +127,21 @@ export async function POST(request: Request) {
       },
     });
   } catch (error) {
+    if (
+      error instanceof Error &&
+      (error.name === "TimeoutError" || error.name === "AbortError")
+    ) {
+      console.error(
+        `[analyze] upstream timeout mode=${selectedMode} durationMs=${Date.now() - started}`,
+      );
+      return Response.json(
+        {
+          detail:
+            "The analysis took too long. Request a shorter statement period, for example 3-6 months.",
+        },
+        { status: 504 },
+      );
+    }
     console.error(
       `[analyze] proxy failure mode=${selectedMode} durationMs=${Date.now() - started}`,
       error,

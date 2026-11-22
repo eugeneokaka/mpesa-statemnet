@@ -1,6 +1,6 @@
 "use client";
 
-import { useRef, useState } from "react";
+import { useEffect, useRef, useState } from "react";
 
 import {
   CheckIcon,
@@ -38,6 +38,41 @@ const privacyPoints = [
   ["This tab only", "Recent analyses stay in this browser tab and clear when you close it."],
 ];
 
+type UploadError = {
+  title: string;
+  message: string;
+  hint?: string;
+};
+
+function describeError(error: unknown): UploadError {
+  const message =
+    error instanceof Error ? error.message : "Something went wrong. Please try again.";
+  const lower = message.toLowerCase();
+
+  if (
+    lower.includes("too long") ||
+    lower.includes("too large") ||
+    lower.includes("shorter period") ||
+    lower.includes("page limit")
+  ) {
+    return {
+      title: "This statement is too large to analyze",
+      message,
+      hint: "Request a shorter period from M-PESA, for example the last 3–6 months, then upload that PDF.",
+    };
+  }
+
+  if (lower.includes("password") || lower.includes("pin")) {
+    return {
+      title: "Could not open the PDF",
+      message,
+      hint: "Use the password that opens the PDF file, not your M-PESA PIN or OTP.",
+    };
+  }
+
+  return { title: "Analysis failed", message };
+}
+
 export function UploadPanel({
   onAnalyzed,
   recent,
@@ -51,19 +86,29 @@ export function UploadPanel({
   const [loading, setLoading] = useState(false);
   const [hashing, setHashing] = useState(false);
   const [cached, setCached] = useState<Analysis | null>(null);
-  const [error, setError] = useState("");
+  const [error, setError] = useState<UploadError | null>(null);
   const inputRef = useRef<HTMLInputElement>(null);
+  const errorRef = useRef<HTMLDivElement>(null);
+
+  useEffect(() => {
+    if (error) {
+      errorRef.current?.scrollIntoView({ behavior: "smooth", block: "nearest" });
+    }
+  }, [error]);
 
   function scrollTo(id: string) {
     document.getElementById(id)?.scrollIntoView({ behavior: "smooth", block: "start" });
   }
 
   async function pickFile(files: FileList | null) {
-    setError("");
+    setError(null);
     const next = files?.[0];
     if (!next) return;
     if (!next.name.toLowerCase().endsWith(".pdf")) {
-      setError("Please choose a PDF file.");
+      setError({
+        title: "Unsupported file",
+        message: "Please choose an M-PESA statement PDF.",
+      });
       return;
     }
 
@@ -83,7 +128,10 @@ export function UploadPanel({
   async function handleSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
     if (!file) {
-      setError("Upload your M-PESA statement PDF first.");
+      setError({
+        title: "No file selected",
+        message: "Upload your M-PESA statement PDF first.",
+      });
       return;
     }
 
@@ -93,17 +141,20 @@ export function UploadPanel({
     }
 
     if (!pin.trim()) {
-      setError("Enter the password used to open the PDF.");
+      setError({
+        title: "Password required",
+        message: "Enter the password used to open the PDF.",
+      });
       return;
     }
 
     setLoading(true);
-    setError("");
+    setError(null);
     try {
       const analysis = await analyzeStatement(file, pin.trim());
       onAnalyzed(analysis);
     } catch (err) {
-      setError(err instanceof Error ? err.message : "Something went wrong.");
+      setError(describeError(err));
     } finally {
       setLoading(false);
     }
@@ -260,9 +311,28 @@ export function UploadPanel({
           )}
 
           {error && (
-            <div className="mt-4 flex items-start gap-2 rounded-xl border border-[#f3d3ca] bg-[#fdf0ec] px-3.5 py-3 text-[12px] text-[#a9472f]">
-              <XIcon className="mt-0.5 h-4 w-4 shrink-0" />
-              <span>{error}</span>
+            <div
+              ref={errorRef}
+              role="alert"
+              aria-live="polite"
+              className="mt-4 flex items-start gap-3 rounded-xl border border-[#f3d3ca] bg-[#fdf0ec] px-3.5 py-3"
+            >
+              <span className="mt-0.5 grid h-7 w-7 shrink-0 place-items-center rounded-full bg-[#f8dfd7] text-[#a9472f]">
+                <XIcon className="h-4 w-4" />
+              </span>
+              <div className="min-w-0">
+                <p className="text-[12px] font-semibold text-[#8f3a25]">
+                  {error.title}
+                </p>
+                <p className="mt-0.5 text-[11px] leading-5 text-[#a9472f]">
+                  {error.message}
+                </p>
+                {error.hint && (
+                  <p className="mt-2 rounded-lg bg-white/70 px-2.5 py-1.5 text-[11px] leading-5 text-[#8f3a25]">
+                    {error.hint}
+                  </p>
+                )}
+              </div>
             </div>
           )}
 
@@ -296,6 +366,12 @@ export function UploadPanel({
               "Analyze statement"
             )}
           </button>
+
+          {loading && (
+            <p className="mt-2 text-center text-[11px] leading-5 text-muted">
+              Large statements can take up to a minute. Keep this tab open.
+            </p>
+          )}
         </form>
 
         <div className="flex flex-col gap-4">
