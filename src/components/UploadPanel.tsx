@@ -32,7 +32,10 @@ type Props = {
 };
 
 const privacyPoints = [
-  ["In-memory only", "Your PDF and password are used once to build the analysis."],
+  [
+    "Processed on our server",
+    "Your PDF is uploaded over HTTPS to our backend, analyzed in memory, and discarded right after.",
+  ],
   ["No database", "We never store your PDF, password, or transactions on our servers."],
   ["No content logs", "Request bodies and file contents are not logged."],
   ["This tab only", "Recent analyses stay in this browser tab and clear when you close it."],
@@ -198,10 +201,26 @@ export function UploadPanel({
             <div>
               <h2 className="text-sm font-semibold text-ink">Analyze a statement</h2>
               <p className="mt-0.5 text-[11px] text-muted">
-                PDF only · 4 MB max · processed in memory
+                PDF only · 4 MB max · processed on our server
               </p>
             </div>
             <StatusPill tone="green">Secure</StatusPill>
+          </div>
+
+          <div className="mb-4 flex items-start gap-3 rounded-xl border border-mint bg-mint-soft px-3.5 py-3">
+            <span className="mt-0.5 grid h-6 w-6 shrink-0 place-items-center rounded-full bg-white text-brand">
+              <ShieldIcon className="h-3.5 w-3.5" />
+            </span>
+            <div>
+              <p className="text-[12px] font-semibold text-brand-dark">
+                Your statement is processed on our server
+              </p>
+              <p className="mt-0.5 text-[11px] leading-5 text-brand-dark/80">
+                Your PDF is uploaded over HTTPS to our backend, analyzed in memory,
+                then discarded. We never store the file, the password, or your
+                transactions.
+              </p>
+            </div>
           </div>
 
           <div

@@ -11,7 +11,10 @@ export function AppShell({ children }: { children: ReactNode }) {
         <Topbar />
         <main className="flex-1 px-4 py-5 sm:px-6 sm:py-6 lg:px-8">{children}</main>
         <footer className="flex flex-col gap-1 border-t border-line px-4 py-4 text-[11px] text-muted sm:flex-row sm:items-center sm:justify-between sm:px-6 lg:px-8">
-          <p>We never ask for your M-PESA PIN or OTP. Your PDF is never stored.</p>
+          <p>
+            Your PDF is processed on our server in memory and never stored. We never
+            ask for your M-PESA PIN or OTP.
+          </p>
           <p>Not affiliated with Safaricom PLC.</p>
         </footer>
       </div>
