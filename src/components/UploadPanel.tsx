@@ -49,6 +49,14 @@ function describeError(error: unknown): UploadError {
     error instanceof Error ? error.message : "Something went wrong. Please try again.";
   const lower = message.toLowerCase();
 
+  if (lower.includes("max 4 mb")) {
+    return {
+      title: "File is too large",
+      message,
+      hint: "Upload a statement PDF under 4 MB. If yours is bigger, request a shorter period from M-PESA.",
+    };
+  }
+
   if (
     lower.includes("too long") ||
     lower.includes("too large") ||
