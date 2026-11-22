@@ -350,7 +350,7 @@ export function CategoryPie({
   if (rest.length > 0) {
     const amount = rest.reduce((sum, item) => sum + item.amount, 0);
     slices.push({
-      name: "Other",
+      name: "Other categories",
       amount,
       pct: total > 0 ? Math.round((amount / total) * 100) : 0,
       color: "#c9c9c2",
@@ -382,8 +382,8 @@ export function CategoryPie({
                 strokeWidth={2}
                 isAnimationActive={false}
               >
-                {slices.map((slice) => (
-                  <Cell key={slice.name} fill={slice.color} />
+                {slices.map((slice, index) => (
+                  <Cell key={`${slice.name}-${index}`} fill={slice.color} />
                 ))}
               </Pie>
               <Tooltip
@@ -395,8 +395,11 @@ export function CategoryPie({
         </div>
 
         <ul className="w-full min-w-0 space-y-1.5">
-          {slices.map((slice) => (
-            <li key={slice.name} className="flex items-center gap-2 text-xs">
+          {slices.map((slice, index) => (
+            <li
+              key={`${slice.name}-${index}`}
+              className="flex items-center gap-2 text-xs"
+            >
               <span
                 className="h-2.5 w-2.5 shrink-0 rounded-full"
                 style={{ backgroundColor: slice.color }}
