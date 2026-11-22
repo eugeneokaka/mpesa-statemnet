@@ -13,9 +13,17 @@ import { formatDateTime, kes } from "@/lib/format";
 import { categoryColor } from "@/lib/theme";
 import type { Transaction } from "@/lib/types";
 
+function parseAmount(value: string): number | null {
+  if (!value.trim()) return null;
+  const parsed = Number(value);
+  return Number.isFinite(parsed) ? Math.max(0, parsed) : null;
+}
+
 export function TransactionsTable({ transactions }: { transactions: Transaction[] }) {
   const [query, setQuery] = useState("");
   const [category, setCategory] = useState("all");
+  const [minAmount, setMinAmount] = useState("");
+  const [maxAmount, setMaxAmount] = useState("");
   const [expanded, setExpanded] = useState<string | null>(null);
   const [copied, setCopied] = useState<string | null>(null);
 
@@ -45,6 +53,8 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
 
   const rows = useMemo(() => {
     const needle = query.trim().toLowerCase();
+    const min = parseAmount(minAmount);
+    const max = parseAmount(maxAmount);
     return transactions.filter((item) => {
       const matchesCategory = category === "all" || item.category === category;
       const matchesQuery =
@@ -52,9 +62,13 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
         item.details.toLowerCase().includes(needle) ||
         item.counterparty.toLowerCase().includes(needle) ||
         item.receipt.toLowerCase().includes(needle);
-      return matchesCategory && matchesQuery;
+      const matchesAmount =
+        (min === null || item.amount >= min) && (max === null || item.amount <= max);
+      return matchesCategory && matchesQuery && matchesAmount;
     });
-  }, [transactions, query, category]);
+  }, [transactions, query, category, minAmount, maxAmount]);
+
+  const hasAmountFilter = minAmount !== "" || maxAmount !== "";
 
   return (
     <div className="min-w-0">
@@ -93,6 +107,52 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
               </option>
             ))}
           </select>
+
+          <div
+            title="Filter by transaction amount in KES"
+            className="flex items-center gap-1.5 rounded-xl border border-line bg-white px-2.5 py-1.5"
+          >
+            <span className="text-[10px] font-semibold uppercase tracking-wide text-muted">
+              KES
+            </span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              step={1}
+              value={minAmount}
+              onChange={(event) => setMinAmount(event.target.value)}
+              placeholder="Min"
+              aria-label="Minimum transaction amount in KES"
+              className="w-16 bg-transparent p-0 text-xs font-medium text-ink outline-none placeholder:text-muted/80"
+            />
+            <span className="text-xs text-muted">–</span>
+            <input
+              type="number"
+              inputMode="numeric"
+              min={0}
+              step={1}
+              value={maxAmount}
+              onChange={(event) => setMaxAmount(event.target.value)}
+              placeholder="Max"
+              aria-label="Maximum transaction amount in KES"
+              className="w-16 bg-transparent p-0 text-xs font-medium text-ink outline-none placeholder:text-muted/80"
+            />
+            {hasAmountFilter && (
+              <button
+                type="button"
+                onClick={() => {
+                  setMinAmount("");
+                  setMaxAmount("");
+                }}
+                aria-label="Clear amount filter"
+                className="rounded-md p-0.5 text-muted transition hover:bg-warm hover:text-ink"
+              >
+                <XIcon className="h-3 w-3" />
+              </button>
+            )}
+          </div>
+
           <span className="whitespace-nowrap text-xs tabular-nums text-muted">
             {rows.length} of {transactions.length}
           </span>
@@ -286,7 +346,7 @@ export function TransactionsTable({ transactions }: { transactions: Transaction[
             {rows.length === 0 && (
               <tr>
                 <td colSpan={6} className="px-4 py-14 text-center text-sm text-muted">
-                  No transactions match your search.
+                  No transactions match these filters.
                 </td>
               </tr>
             )}
