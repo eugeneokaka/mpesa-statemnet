@@ -2,8 +2,6 @@
 
 import { useEffect, useRef, useState } from "react";
 import {
-  Bar,
-  BarChart,
   CartesianGrid,
   Cell,
   Line,
@@ -176,50 +174,46 @@ export function CategoryBreakdown({ data }: { data: CategoryInsight[] }) {
 }
 
 export function TopRecipients({ data }: { data: CounterpartyInsight[] }) {
-  const chartData = data.map((item) => ({
-    ...item,
-    label: item.name.length > 16 ? `${item.name.slice(0, 16)}…` : item.name,
-  }));
+  const rows = data.slice(0, 7);
+  const max = rows.reduce((value, item) => Math.max(value, item.amount), 0) || 1;
+
+  if (rows.length === 0) {
+    return (
+      <p className="py-10 text-center text-sm text-muted">
+        No recipient spending in this statement.
+      </p>
+    );
+  }
 
   return (
-    <div className="h-[260px] w-full min-w-0 sm:h-[300px]">
-      <ResponsiveContainer width="100%" height="100%">
-        <BarChart
-          data={chartData}
-          layout="vertical"
-          margin={{ top: 4, right: 8, left: 0, bottom: 0 }}
+    <ul className="space-y-0.5">
+      {rows.map((item, index) => (
+        <li
+          key={`${item.name}-${index}`}
+          className="flex items-start gap-3 rounded-xl px-1.5 py-2.5 transition hover:bg-warm"
         >
-          <CartesianGrid strokeDasharray="3 3" horizontal={false} stroke="#f1f1ec" />
-          <XAxis
-            type="number"
-            tickFormatter={compactKes}
-            tickLine={false}
-            axisLine={false}
-            tick={{ fill: "#a4a49d", fontSize: 11 }}
-          />
-          <YAxis
-            type="category"
-            dataKey="label"
-            width={120}
-            tickLine={false}
-            axisLine={false}
-            tick={{ fill: "#6b6b65", fontSize: 11 }}
-          />
-          <Tooltip
-            contentStyle={tooltipStyle}
-            formatter={(value) => [kes(Number(value)), "Spent"]}
-            cursor={{ fill: "#f6f6f2" }}
-          />
-          <Bar
-            dataKey="amount"
-            fill="#0f6b45"
-            radius={[0, 8, 8, 0]}
-            barSize={12}
-            isAnimationActive={false}
-          />
-        </BarChart>
-      </ResponsiveContainer>
-    </div>
+          <span className="mt-0.5 grid h-8 w-8 shrink-0 place-items-center rounded-full bg-warm text-[11px] font-bold text-muted">
+            {String(index + 1).padStart(2, "0")}
+          </span>
+          <div className="min-w-0 flex-1">
+            <div className="flex items-start justify-between gap-3">
+              <p className="min-w-0 flex-1 break-words text-[13px] font-semibold leading-5 text-ink">
+                {item.name}
+              </p>
+              <span className="shrink-0 text-[13px] font-semibold tabular-nums text-ink">
+                {kes(item.amount, 0)}
+              </span>
+            </div>
+            <div className="mt-1.5 h-1.5 overflow-hidden rounded-full bg-warm">
+              <div
+                className="h-full rounded-full bg-brand"
+                style={{ width: `${Math.max(6, (item.amount / max) * 100)}%` }}
+              />
+            </div>
+          </div>
+        </li>
+      ))}
+    </ul>
   );
 }
 
